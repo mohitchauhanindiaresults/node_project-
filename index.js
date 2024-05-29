@@ -24,6 +24,7 @@ const connectDB = async () => {
     }
 }
 
+// Print Hello world
 app.get('/', (req, res) => {
     res.send('Hello, world!');
 });
@@ -41,6 +42,18 @@ app.post('/register', async (req, res) => {
         await newUser.save();
 
         res.status(200).send('User registered successfully');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
+    }
+});
+
+// New API endpoint to get the names of all users
+app.get('/users', async (req, res) => {
+    try {
+        const users = await User.find({}, 'name'); // Fetch only the 'name' field
+        const userNames = users.map(user => user.name);
+        res.status(200).json(userNames);
     } catch (error) {
         console.error(error);
         res.status(500).send('Server error');
