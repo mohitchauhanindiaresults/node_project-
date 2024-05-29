@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
 const User = require('./User'); // Import the User model
+const multer = require('multer');
+const path = require('path');
 
 
 const app = express();
@@ -29,11 +31,28 @@ app.get('/', (req, res) => {
     res.send('Hello, world!');
 });
 
+// Set up multer for file upload
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/')
+    },
+    filename: function (req, file, cb) {
+      cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname))
+    }
+  });
+  
+  const upload = multer({ storage: storage });
 
 // New API endpoint to handle user registration
 app.post('/register', upload.single('image'), async (req, res) => {
     try {
         const { name, number, password } = req.body;
+        
+        // Check if file upload failed
+        if (!req.file) {
+            return res.status(400).send('No file uploaded');
+        }
+
         const image = req.file.path; // Path to the uploaded image
 
         if (!name || !number || !image || !password) {
@@ -49,6 +68,7 @@ app.post('/register', upload.single('image'), async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+
 
 
 // New API endpoint to get the names of all users
