@@ -29,16 +29,18 @@ app.get('/', (req, res) => {
     res.send('Hello, world!');
 });
 
+
 // New API endpoint to handle user registration
-app.post('/register', async (req, res) => {
+app.post('/register', upload.single('image'), async (req, res) => {
     try {
-        const { name, password } = req.body;
-        if (!name || !password) {
-            return res.status(400).send('Name and password are required');
+        const { name, number, password } = req.body;
+        const image = req.file.path; // Path to the uploaded image
+
+        if (!name || !number || !image || !password) {
+            return res.status(400).send('Name, number, image, and password are required');
         }
 
-       // const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ name, password });
+        const newUser = new User({ name, number, image, password });
         await newUser.save();
 
         res.status(200).send('User registered successfully');
@@ -47,6 +49,7 @@ app.post('/register', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+
 
 // New API endpoint to get the names of all users
 app.get('/users', async (req, res) => {
@@ -59,6 +62,7 @@ app.get('/users', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+
 
 connectDB().then(() => {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
